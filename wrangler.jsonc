@@ -1,0 +1,100 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "mailflare-test",
+	"main": "./worker.ts",
+	"compatibility_date": "2026-05-20",
+	"keep_vars": true,
+	"compatibility_flags": [
+		"nodejs_compat",
+		"global_fetch_strictly_public"
+	],
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".open-next/assets",
+	},
+	"images": {
+		"binding": "IMAGES",
+	},
+	"services": [
+		{
+			"binding": "WORKER_SELF_REFERENCE",
+			"service": "mailflare",
+		},
+	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "REALTIME",
+				"class_name": "RealtimeHub",
+			},
+		],
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": [
+				"RealtimeHub",
+			],
+		},
+	],
+	"triggers": {
+		"crons": ["0 2 * * *"],
+	},
+	"ratelimits": [
+		{
+			"name": "LOGIN_RATE_LIMIT",
+			"namespace_id": "1001",
+			"simple": {
+				"limit": 20,
+				"period": 60,
+			},
+		},
+	],
+	"observability": {
+		"enabled": true,
+	},
+	"upload_source_maps": true,
+	"send_email": [
+		{
+			"name": "EMAIL",
+			"remote": false,
+		},
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "mailflare-test",
+			"migrations_dir": "drizzle/migrations","database_id": "3d197c1f-5c7e-45e5-92cf-f8df160b55ae",
+		},
+	],
+	"r2_buckets": [
+		{
+			"binding": "BUCKET",
+			"bucket_name": "mailflare-raw-test","preview_bucket_name": "mailflare-raw-test",
+		},
+	],
+	"queues": {
+		"producers": [
+			{
+				"binding": "INBOUND_QUEUE",
+				"queue": "mailflare-inbound-test",
+			},
+			{
+				"binding": "OUTBOUND_QUEUE",
+				"queue": "mailflare-outbound-test",
+			},
+		],
+		"consumers": [
+			{
+				"queue": "mailflare-inbound-test",
+				"max_batch_size": 5,
+				"max_retries": 3,
+			},
+			{
+				"queue": "mailflare-outbound-test",
+				"max_batch_size": 5,
+				"max_retries": 3,
+			},
+		],
+	},
+}
